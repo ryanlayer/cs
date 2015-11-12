@@ -7,7 +7,7 @@
 int main(int argc, char **argv)
 {
 
-    struct node *root = NULL;
+    struct node *root = NULL, *leaf = NULL;
 
     char line[256];
     FILE *f = fopen(argv[1], "r");
@@ -23,7 +23,8 @@ int main(int argc, char **argv)
             *value = atoi(strtok(NULL, " "));
             printf("%d %d\n", key, *value);
                     
-            root = insert(root, key, (void *)value);
+            int pos;
+            root = insert(root, key, (void *)value, &leaf, &pos);
         } else if (a[0] == 'S') {
             int key = atoi(strtok(NULL, " "));
             //r = find(root, key);
