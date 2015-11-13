@@ -209,8 +209,10 @@ struct node *split_node(struct node *root,
     }
 
     // if the node is not a leaf, the far right pointer must be coppied too
-    if (node->is_leaf == 0)
+    if (node->is_leaf == 0) {
         n->pointers[new_node_i] = node->pointers[node_i];
+        n->pointers[0] = NULL;
+    }
 
     // set status of new node
     n->is_leaf = node->is_leaf;
@@ -345,7 +347,7 @@ void print_tree(struct node *curr, int level)
 }
 //}}}
 
-
+//{{{ void print_node(struct node *n)
 void print_node(struct node *n)
 {
     int i;
@@ -362,6 +364,7 @@ void print_node(struct node *n)
     }
     printf("\n");
 }
+//}}}
 
 //{{{void print_values(struct node *root)
 void print_values(struct node *root)
@@ -412,22 +415,22 @@ void *bpt_find(struct node *root, struct node **leaf, int key)
 //{{{ void destroy_tree(struct node **curr)
 void destroy_tree(struct node **curr)
 {
-#if 0
+#if 1
     if (*curr == NULL) {
         return;
     } else if ((*curr)->is_leaf == 1) {
-        fprintf(stderr, "l\t%p\n", *curr);
         free((*curr)->keys);
         free((*curr)->pointers);
         free(*curr);
         *curr = NULL;
         return;
     } else {
-        fprintf(stderr, "n\t%p\n", *curr);
         uint32_t i;
         for (i = 0; i <= (*curr)->num_keys; ++i) 
             destroy_tree((struct node **)&((*curr)->pointers[i]));
-        //free(*curr);
+        free((*curr)->keys);
+        free((*curr)->pointers);
+        free(*curr);
         *curr = NULL;
         return;
     } 

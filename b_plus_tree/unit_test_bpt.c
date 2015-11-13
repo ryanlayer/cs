@@ -8,7 +8,8 @@
 #include <string.h>
 #include "bpt.h"
 
-int uint32_t_cmp(const void *a, const void *b)
+//{{{ int uint32_t_cmp(const void *a, const void *b)
+static int uint32_t_cmp(const void *a, const void *b)
 {
     uint32_t _a = *((uint32_t *)a), _b = *((uint32_t *)b);
 
@@ -20,6 +21,7 @@ int uint32_t_cmp(const void *a, const void *b)
 
     return 0;
 }
+//}}}
 
 void setUp(void)
 {
@@ -68,6 +70,9 @@ void test_new_node(void)
     TEST_ASSERT_EQUAL(0, n->num_keys);
     TEST_ASSERT_EQUAL(0, n->is_leaf);
     TEST_ASSERT_EQUAL(NULL, n->next);
+    free(n->keys);
+    free(n->pointers);
+    free(n);
 }
 //}}}
 
@@ -136,6 +141,8 @@ void test_find_leaf(void)
 
     for (i = 9; i <= 12; ++i) 
         TEST_ASSERT_EQUAL(l3, find_leaf(root, i));
+
+    destroy_tree(&root);
 }
 //}}}
 
@@ -199,6 +206,18 @@ void test_split_node_non_root_parent_has_room(void)
     TEST_ASSERT_EQUAL(l1, n1->pointers[0]);
     TEST_ASSERT_EQUAL(l1->next, n1->pointers[1]);
 
+    free(l1->keys);
+    free(l1->pointers);
+    free(l1);
+    free(n1->keys);
+    free(n1->pointers);
+    free(n1);
+    free(root->keys);
+    free(root->pointers);
+    free(root);
+    free(hi->keys);
+    free(hi->pointers);
+    free(hi);
 }
 //}}}
 
@@ -234,6 +253,8 @@ void test_split_node_root(void)
 
     TEST_ASSERT_EQUAL(2, p_root->num_keys);
     TEST_ASSERT_EQUAL(3, p_root->next->num_keys);
+
+    destroy_tree(&new_root);
 }
 //}}}
 
@@ -356,8 +377,6 @@ void test_insert(void)
     root = insert(root, 13, (void *)(V + v++), &leaf, &pos);
     root = insert(root, 14, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(((struct node*)root->pointers[1])->pointers[3], leaf);
-
-
  
     TEST_ASSERT_EQUAL(1, root->num_keys);
     TEST_ASSERT_EQUAL(8, root->keys[0]);
@@ -382,8 +401,8 @@ void test_insert(void)
     //   2,3 4,5 6,7 8,9 10,11 12,13,14
     struct node *l1 = (struct node *)n1->pointers[0];
     struct node *l2 = (struct node *)n1->pointers[1];
-    //struct node *l3 = (struct node *)n1->pointers[2];
-    struct node *l3 = (struct node *)n2->pointers[0];
+    struct node *l3 = (struct node *)n1->pointers[2];
+    //struct node *l3 = (struct node *)n2->pointers[0];
     struct node *l4 = (struct node *)n2->pointers[1];
     struct node *l5 = (struct node *)n2->pointers[2];
     struct node *l6 = (struct node *)n2->pointers[3];
@@ -424,6 +443,8 @@ void test_insert(void)
     TEST_ASSERT_EQUAL(14, l6->keys[2]);
     TEST_ASSERT_EQUAL(1, l6->is_leaf);
     TEST_ASSERT_EQUAL(NULL, l6->next);
+
+    destroy_tree(&root);
 }
 //}}}
 
@@ -481,165 +502,7 @@ void test_insert_out_of_order(void)
     TEST_ASSERT_EQUAL(V[1], *((uint32_t *)(n->pointers[1])));
     TEST_ASSERT_EQUAL(V[3], *((uint32_t *)(n->pointers[2])));
 
-    /*
-    TEST_ASSERT_EQUAL(1, root->num_keys);
-    TEST_ASSERT_EQUAL(2, root->keys[0]);
-    TEST_ASSERT_EQUAL(1, root->is_leaf);
-    TEST_ASSERT_EQUAL(root, leaf);
-    TEST_ASSERT_EQUAL(0, pos);
-    */
-
-#if 0
-    // 4
-    //  2,3 4,5,6
-    root = insert(root, 3, (void *)(V + v++), &leaf, &pos);
-    TEST_ASSERT_EQUAL(root, leaf);
-    TEST_ASSERT_EQUAL(1, pos);
-
-    root = insert(root, 4, (void *)(V + v++), &leaf, &pos);
-    TEST_ASSERT_EQUAL(root, leaf);
-    TEST_ASSERT_EQUAL(2, pos);
-    root = insert(root, 5, (void *)(V + v++), &leaf, &pos);
-    TEST_ASSERT_EQUAL(root, leaf);
-    TEST_ASSERT_EQUAL(3, pos);
-    root = insert(root, 6, (void *)(V + v++), &leaf, &pos);
-    TEST_ASSERT_EQUAL(2, pos);
-
-    TEST_ASSERT_FALSE(root == leaf);
-    TEST_ASSERT_EQUAL(root->pointers[1], leaf);
-
-    TEST_ASSERT_EQUAL(1, root->num_keys);
-    TEST_ASSERT_EQUAL(4, root->keys[0]);
-    TEST_ASSERT_EQUAL(0, root->is_leaf);
-
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->num_keys);
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->keys[0]);
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[0])->keys[1]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[0])->is_leaf);
-    TEST_ASSERT_EQUAL(root->pointers[1], 
-                      ((struct node*)root->pointers[0])->next);
-
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[1])->num_keys);
-    TEST_ASSERT_EQUAL(4, ((struct node*)root->pointers[1])->keys[0]);
-    TEST_ASSERT_EQUAL(5, ((struct node*)root->pointers[1])->keys[1]);
-    TEST_ASSERT_EQUAL(6, ((struct node*)root->pointers[1])->keys[2]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[1])->is_leaf);
-    TEST_ASSERT_EQUAL(NULL, ((struct node*)root->pointers[1])->next);
-
-    // 4,6
-    //  2,3 4,5 6,7,8
-    root = insert(root, 7, (void *)(V + v++), &leaf, &pos);
-    TEST_ASSERT_EQUAL(root->pointers[1], leaf);
-    TEST_ASSERT_EQUAL(3, pos);
-    root = insert(root, 8, (void *)(V + v++), &leaf, &pos);
-    TEST_ASSERT_EQUAL(root->pointers[2], leaf);
-    TEST_ASSERT_EQUAL(2, pos);
- 
-    TEST_ASSERT_EQUAL(2, root->num_keys);
-    TEST_ASSERT_EQUAL(4, root->keys[0]);
-    TEST_ASSERT_EQUAL(6, root->keys[1]);
-
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->num_keys);
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->keys[0]);
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[0])->keys[1]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[0])->is_leaf);
-    TEST_ASSERT_EQUAL(root->pointers[1], 
-                      ((struct node*)root->pointers[0])->next);
-
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[1])->num_keys);
-    TEST_ASSERT_EQUAL(4, ((struct node*)root->pointers[1])->keys[0]);
-    TEST_ASSERT_EQUAL(5, ((struct node*)root->pointers[1])->keys[1]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[1])->is_leaf);
-    TEST_ASSERT_EQUAL(root->pointers[2], 
-                      ((struct node*)root->pointers[1])->next);
-
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[2])->num_keys);
-    TEST_ASSERT_EQUAL(6, ((struct node*)root->pointers[2])->keys[0]);
-    TEST_ASSERT_EQUAL(7, ((struct node*)root->pointers[2])->keys[1]);
-    TEST_ASSERT_EQUAL(8, ((struct node*)root->pointers[2])->keys[2]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[2])->is_leaf);
-    TEST_ASSERT_EQUAL(NULL, ((struct node*)root->pointers[2])->next);
-
-    // 8
-    //  4,6 8,10,12
-    //   2,3 4,5 6,7 8,9 10,11 12,13,14
-
-    root = insert(root, 9, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 10, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 11, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 12, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 13, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 14, (void *)(V + v++), &leaf, &pos);
-    TEST_ASSERT_EQUAL(((struct node*)root->pointers[1])->pointers[3], leaf);
-
-
- 
-    TEST_ASSERT_EQUAL(1, root->num_keys);
-    TEST_ASSERT_EQUAL(8, root->keys[0]);
-
-    //  4,6 8,10,12
-    struct node *n1 = (struct node *)root->pointers[0];
-    struct node *n2 = (struct node *)root->pointers[1];
-
-    TEST_ASSERT_EQUAL(2, n1->num_keys);
-    TEST_ASSERT_EQUAL(4, n1->keys[0]);
-    TEST_ASSERT_EQUAL(6, n1->keys[1]);
-    TEST_ASSERT_EQUAL(0, n1->is_leaf);
-    TEST_ASSERT_EQUAL(NULL, n1->next);
-
-    TEST_ASSERT_EQUAL(3, n2->num_keys);
-    TEST_ASSERT_EQUAL(8, n2->keys[0]);
-    TEST_ASSERT_EQUAL(10, n2->keys[1]);
-    TEST_ASSERT_EQUAL(12, n2->keys[2]);
-    TEST_ASSERT_EQUAL(0, n2->is_leaf);
-    TEST_ASSERT_EQUAL(NULL, n2->next);
-
-    //   2,3 4,5 6,7 8,9 10,11 12,13,14
-    struct node *l1 = (struct node *)n1->pointers[0];
-    struct node *l2 = (struct node *)n1->pointers[1];
-    //struct node *l3 = (struct node *)n1->pointers[2];
-    struct node *l3 = (struct node *)n2->pointers[0];
-    struct node *l4 = (struct node *)n2->pointers[1];
-    struct node *l5 = (struct node *)n2->pointers[2];
-    struct node *l6 = (struct node *)n2->pointers[3];
-
-    TEST_ASSERT_EQUAL(2, l1->num_keys);
-    TEST_ASSERT_EQUAL(2, l1->keys[0]);
-    TEST_ASSERT_EQUAL(3, l1->keys[1]);
-    TEST_ASSERT_EQUAL(1, l1->is_leaf);
-    TEST_ASSERT_EQUAL(l2, l1->next);
-
-    TEST_ASSERT_EQUAL(2, l2->num_keys);
-    TEST_ASSERT_EQUAL(4, l2->keys[0]);
-    TEST_ASSERT_EQUAL(5, l2->keys[1]);
-    TEST_ASSERT_EQUAL(1, l2->is_leaf);
-    TEST_ASSERT_EQUAL(l3, l2->next);
-
-    TEST_ASSERT_EQUAL(2, l3->num_keys);
-    TEST_ASSERT_EQUAL(6, l3->keys[0]);
-    TEST_ASSERT_EQUAL(7, l3->keys[1]);
-    TEST_ASSERT_EQUAL(1, l3->is_leaf);
-    TEST_ASSERT_EQUAL(l4, l3->next);
-
-    TEST_ASSERT_EQUAL(2, l4->num_keys);
-    TEST_ASSERT_EQUAL(8, l4->keys[0]);
-    TEST_ASSERT_EQUAL(9, l4->keys[1]);
-    TEST_ASSERT_EQUAL(1, l4->is_leaf);
-    TEST_ASSERT_EQUAL(l5, l4->next);
-
-    TEST_ASSERT_EQUAL(2, l5->num_keys);
-    TEST_ASSERT_EQUAL(10, l5->keys[0]);
-    TEST_ASSERT_EQUAL(11, l5->keys[1]);
-    TEST_ASSERT_EQUAL(1, l5->is_leaf);
-    TEST_ASSERT_EQUAL(l6, l5->next);
-
-    TEST_ASSERT_EQUAL(3, l6->num_keys);
-    TEST_ASSERT_EQUAL(12, l6->keys[0]);
-    TEST_ASSERT_EQUAL(13, l6->keys[1]);
-    TEST_ASSERT_EQUAL(14, l6->keys[2]);
-    TEST_ASSERT_EQUAL(1, l6->is_leaf);
-    TEST_ASSERT_EQUAL(NULL, l6->next);
-#endif
+    destroy_tree(&root);
 }
 //}}}
 
@@ -661,6 +524,7 @@ void test_insert_id_updated_node(void)
     root = insert(root, 1, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(root->pointers[0], leaf);
 
+    destroy_tree(&root);
 
 }
 //}}}
@@ -735,6 +599,8 @@ void test_find(void)
         else 
             TEST_ASSERT_EQUAL(i/2, *r);
     }
+
+    destroy_tree(&root);
 }
 //}}}
 
@@ -759,9 +625,7 @@ void decrement_repair(struct node *a, struct node *b)
         b->keys[i] = b->keys[i] + 1;
 
 }
-//}}}}
 
-//{{{void test_split_repair(void)
 void test_split_repair(void)
 {
     /*
@@ -835,6 +699,8 @@ void test_split_repair(void)
     TEST_ASSERT_EQUAL(NULL, ((struct node*)root->pointers[1])->next);
 
     repair_func = NULL;
+
+    destroy_tree(&root);
 }
 //}}}
 
@@ -888,7 +754,6 @@ void test_destroy_tree(void)
 //{{{ void test_rand_test(void)
 void test_bpt_find(void)
 {
-#if 1
     repair_func = NULL;
     struct node *root = NULL;
     struct node *leaf = NULL;
@@ -898,86 +763,24 @@ void test_bpt_find(void)
     uint32_t *d = (uint32_t *)malloc(size * sizeof(uint32_t));
     uint32_t *v = (uint32_t *)malloc(size * sizeof(uint32_t));
 
-    //time_t t = time(NULL);
-    //fprintf(stderr, "%ld\n", t);
-    srand(1447364916);
+    time_t t = time(NULL);
+    srand(t);
 
     uint32_t i, j;
     for (i = 0; i < size; ++i) {
         d[i] = rand() % 100000;
         v[i] = d[i] /2;
         root = insert(root, d[i], (void *)(v + i), &leaf, &pos);
-#if 0
-        if (i == 13) {
-            printf("=>%u\n", d[i]);
-            print_node(root);
-            print_node((struct node *)root->pointers[0]);
-            print_node((struct node *)root->pointers[1]);
-            print_node((struct node *)root->pointers[2]);
-            print_node((struct node *)root->pointers[3]);
-            print_node((struct node *)root->pointers[4]);
-        }
-
-        if (i == 14) {
-            printf("=>%u\n", d[i]);
-            print_node(root);
-            print_node((struct node *)root->pointers[0]);
-            print_node((struct node *)root->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[0]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[2]);
-            //print_node((struct node *)((struct node *)root->pointers[1])->pointers[0]);
-            print_node((struct node *)((struct node *)root->pointers[1])->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[1])->pointers[2]);
-            print_node((struct node *)((struct node *)root->pointers[1])->pointers[3]);
-        }
- 
-        if (i == 18) {
-            printf("=>%u\n", d[i]);
-            print_node(root);
-            print_node((struct node *)root->pointers[0]);
-            print_node((struct node *)root->pointers[1]);
-            print_node((struct node *)root->pointers[2]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[0]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[2]);
-
-            //print_node((struct node *)((struct node *)root->pointers[1])->pointers[0]);
-            print_node((struct node *)((struct node *)root->pointers[1])->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[1])->pointers[2]);
-
-            //print_node((struct node *)((struct node *)root->pointers[2])->pointers[0]);
-            print_node((struct node *)((struct node *)root->pointers[2])->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[2])->pointers[2]);
-            print_node((struct node *)((struct node *)root->pointers[2])->pointers[3]);
-        }
-
-        if (i == 19) {
-            printf("=>%u\n", d[i]);
-            print_node(root);
-            print_node((struct node *)root->pointers[0]);
-            print_node((struct node *)root->pointers[1]);
-            print_node((struct node *)root->pointers[2]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[0]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[0])->pointers[2]);
-
-            //print_node((struct node *)((struct node *)root->pointers[1])->pointers[0]);
-            print_node((struct node *)((struct node *)root->pointers[1])->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[1])->pointers[2]);
-
-            //print_node((struct node *)((struct node *)root->pointers[2])->pointers[0]);
-            print_node((struct node *)((struct node *)root->pointers[2])->pointers[1]);
-            print_node((struct node *)((struct node *)root->pointers[2])->pointers[2]);
-            print_node((struct node *)((struct node *)root->pointers[2])->pointers[3]);
-        }
-#endif
     }
+
     uint32_t *r;
     for (i = 0; i < size; ++i) {
         r = (uint32_t *)bpt_find(root, &leaf, d[i]);
         TEST_ASSERT_EQUAL(d[i]/2, *r);
     }
-#endif
+
+    free(d);
+    free(v);
+    destroy_tree(&root);
 }
 //}}}
