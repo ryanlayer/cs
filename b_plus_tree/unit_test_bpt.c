@@ -784,3 +784,106 @@ void test_bpt_find(void)
     destroy_tree(&root);
 }
 //}}}
+
+//{{{ void test_insert_repeat(void)
+void test_insert_repeat(void)
+{
+    int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
+    int v=0;
+
+    struct node *root = NULL;
+    struct node *leaf = NULL;
+    int pos;
+
+
+    /*
+     * 4
+     *  2,3 4,5,6
+     */
+    root = insert(root, 3, (void *)(V + 0),  &leaf, &pos);
+    root = insert(root, 5, (void *)(V + 1),  &leaf, &pos);
+    root = insert(root, 4, (void *)(V + 2),  &leaf, &pos);
+    root = insert(root, 6, (void *)(V + 3),  &leaf, &pos);
+    root = insert(root, 2, (void *)(V + 4),  &leaf, &pos);
+
+    root = insert(root, 2, (void *)(V + 5),  &leaf, &pos);
+    root = insert(root, 3, (void *)(V + 6),  &leaf, &pos);
+    root = insert(root, 4, (void *)(V + 7),  &leaf, &pos);
+    root = insert(root, 5, (void *)(V + 8),  &leaf, &pos);
+    root = insert(root, 6, (void *)(V + 9),  &leaf, &pos);
+
+    uint32_t *r = (uint32_t *)bpt_find(root, &leaf, 2);
+    TEST_ASSERT_EQUAL(V[5], *r);
+
+    r = (uint32_t *)bpt_find(root, &leaf, 3);
+    TEST_ASSERT_EQUAL(V[6], *r);
+    
+    r = (uint32_t *)bpt_find(root, &leaf, 4);
+    TEST_ASSERT_EQUAL(V[7], *r);
+
+    r = (uint32_t *)bpt_find(root, &leaf, 5);
+    TEST_ASSERT_EQUAL(V[8], *r);
+
+    r = (uint32_t *)bpt_find(root, &leaf, 6);
+    TEST_ASSERT_EQUAL(V[9], *r);
+
+    destroy_tree(&root);
+}
+//}}}
+
+//{{{ void test_insert_repeat_append(void)
+
+void append_sum(void *new_value, void **curr_value)
+{
+    uint32_t *new = (uint32_t *)new_value;
+    uint32_t **curr = (uint32_t **)curr_value;
+
+    **curr = **curr + *new;
+}
+
+void test_insert_repeat_append(void)
+{
+    int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
+    int v=0;
+
+    struct node *root = NULL;
+    struct node *leaf = NULL;
+    int pos;
+
+    append_func = append_sum;
+
+    /*
+     * 4
+     *  2,3 4,5,6
+     */
+    root = insert(root, 2, (void *)(V + 0),  &leaf, &pos); //1
+    root = insert(root, 3, (void *)(V + 1),  &leaf, &pos); //2
+    root = insert(root, 4, (void *)(V + 2),  &leaf, &pos); //3
+    root = insert(root, 5, (void *)(V + 3),  &leaf, &pos); //4
+    root = insert(root, 6, (void *)(V + 4),  &leaf, &pos); //5
+
+    root = insert(root, 2, (void *)(V + 5),  &leaf, &pos); //7
+    root = insert(root, 3, (void *)(V + 6),  &leaf, &pos); //7
+    root = insert(root, 4, (void *)(V + 7),  &leaf, &pos); //8
+    root = insert(root, 5, (void *)(V + 8),  &leaf, &pos); //9
+    root = insert(root, 6, (void *)(V + 9),  &leaf, &pos); //10
+
+    uint32_t *r = (uint32_t *)bpt_find(root, &leaf, 2);
+    TEST_ASSERT_EQUAL(7, *r);
+
+    r = (uint32_t *)bpt_find(root, &leaf, 3);
+    TEST_ASSERT_EQUAL(9, *r);
+    
+    r = (uint32_t *)bpt_find(root, &leaf, 4);
+    TEST_ASSERT_EQUAL(11, *r);
+
+    r = (uint32_t *)bpt_find(root, &leaf, 5);
+    TEST_ASSERT_EQUAL(13, *r);
+
+    r = (uint32_t *)bpt_find(root, &leaf, 6);
+    TEST_ASSERT_EQUAL(15, *r);
+
+    destroy_tree(&root);
+    append_func = NULL;
+}
+//}}}

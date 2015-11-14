@@ -14,6 +14,7 @@
 
 
 void (*repair_func)(struct node *, struct node *) = NULL;
+void (*append_func)(void *, void **) = NULL;
 
 //{{{ struct node *to_node(void *n)
 struct node *to_node(void *n)
@@ -90,6 +91,19 @@ struct node *place_new_key_value(struct node *root,
 
     if ((*target_node)->is_leaf == 1)
         *target_key_pos = insert_key_pos;
+
+
+    if (((*target_node)->is_leaf == 1) &&
+         (*target_key_pos < ((*target_node)->num_keys)) &&
+        ((*target_node)->keys[*target_key_pos] == key )) {
+
+        if (append_func != NULL)
+            append_func(value, &((*target_node)->pointers[*target_key_pos]));
+        else
+            (*target_node)->pointers[*target_key_pos] = value;
+
+        return root;
+    }
 
     // move everything over
     int i;
@@ -269,7 +283,7 @@ struct node *split_node(struct node *root,
                                    &(node->parent),
                                    NULL,
                                    n->keys[0],
-                                   (void *)n); 
+                                   (void *)n);
     }
 }
 //}}}

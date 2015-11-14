@@ -14,6 +14,8 @@ struct node
 
 void (*repair_func)(struct node *, struct node *);
 
+void (*append_func)(void *, void **);
+
 struct node *to_node(void *n);
 
 struct node *insert(struct node *root,
