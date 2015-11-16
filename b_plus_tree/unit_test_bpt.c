@@ -62,10 +62,10 @@ void test_b_search(void)
 }
 //}}}
 
-//{{{ void tet_new_node(void)
-void test_new_node(void)
+//{{{ void test_bpt_new_node(void)
+void test_bpt_new_node(void)
 {
-    struct node *n = new_node();
+    struct bpt_node *n = bpt_new_node();
     TEST_ASSERT_EQUAL(NULL, n->parent);
     TEST_ASSERT_EQUAL(0, n->num_keys);
     TEST_ASSERT_EQUAL(0, n->is_leaf);
@@ -76,11 +76,11 @@ void test_new_node(void)
 }
 //}}}
 
-//{{{ void test_find_leaf(void)
-void test_find_leaf(void)
+//{{{ void test_bpt_find_leaf(void)
+void test_bpt_find_leaf(void)
 {
 
-    struct node *l1 = new_node();
+    struct bpt_node *l1 = bpt_new_node();
     l1->is_leaf = 1;
     l1->num_keys = 4;
     l1->keys[0] = 1;
@@ -88,7 +88,7 @@ void test_find_leaf(void)
     l1->keys[2] = 3;
     l1->keys[3] = 4;
 
-    struct node *l2 = new_node();
+    struct bpt_node *l2 = bpt_new_node();
     l2->is_leaf = 1;
     l2->num_keys = 4;
     l2->keys[0] = 5;
@@ -96,7 +96,7 @@ void test_find_leaf(void)
     l2->keys[2] = 7;
     l2->keys[3] = 8;
 
-    struct node *l3 = new_node();
+    struct bpt_node *l3 = bpt_new_node();
     l3->is_leaf = 1;
     l3->num_keys = 4;
     l3->keys[0] = 9;
@@ -107,7 +107,7 @@ void test_find_leaf(void)
     l1->next = l2;
     l2->next = l3;
 
-    struct node *n1 = new_node();
+    struct bpt_node *n1 = bpt_new_node();
     n1->keys[0] = 5;
     n1->num_keys = 1;
     n1->pointers[0] = (void *)l1;
@@ -115,7 +115,7 @@ void test_find_leaf(void)
     l1->parent = n1;
     l2->parent = n1;
 
-    struct node *root = new_node();
+    struct bpt_node *root = bpt_new_node();
     root->keys[0] = 9;
     root->num_keys = 1;
     root->pointers[0] = (void *)n1;
@@ -134,23 +134,23 @@ void test_find_leaf(void)
 
     int i;
     for (i = 1; i <= 4; ++i)
-        TEST_ASSERT_EQUAL(l1, find_leaf(root, i));
+        TEST_ASSERT_EQUAL(l1, bpt_find_leaf(root, i));
 
     for (i = 5; i <= 8; ++i) 
-        TEST_ASSERT_EQUAL(l2, find_leaf(root, i));
+        TEST_ASSERT_EQUAL(l2, bpt_find_leaf(root, i));
 
     for (i = 9; i <= 12; ++i) 
-        TEST_ASSERT_EQUAL(l3, find_leaf(root, i));
+        TEST_ASSERT_EQUAL(l3, bpt_find_leaf(root, i));
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 }
 //}}}
 
-//{{{void test_split_node_non_root_parent_has_room(void)
-void test_split_node_non_root_parent_has_room(void)
+//{{{void test_bpt_split_node_non_root_parent_has_room(void)
+void test_bpt_split_node_non_root_parent_has_room(void)
 {
     int V[5] = {2,3,4,5,6};
-    struct node *l1 = new_node();
+    struct bpt_node *l1 = bpt_new_node();
     l1->is_leaf = 1;
     l1->num_keys = 4;
     l1->keys[0] = 1;
@@ -163,13 +163,13 @@ void test_split_node_non_root_parent_has_room(void)
     l1->pointers[2] = (void*)(V + 2);
     l1->pointers[3] = (void*)(V + 2);
 
-    struct node *n1 = new_node();
+    struct bpt_node *n1 = bpt_new_node();
     n1->keys[0] = 6;
     n1->num_keys = 1;
     n1->pointers[0] = (void *)l1;
     l1->parent = n1;
 
-    struct node *root = new_node();
+    struct bpt_node *root = bpt_new_node();
     root->keys[0] = 9;
     root->num_keys = 1;
     root->pointers[0] = (void *)n1;
@@ -179,9 +179,9 @@ void test_split_node_non_root_parent_has_room(void)
     l1->keys[4] = 5;
 
 
-    struct node *lo, *hi;
+    struct bpt_node *lo, *hi;
     int split;
-    root = split_node(root, l1, &lo, &hi, &split, NULL);
+    root = bpt_split_node(root, l1, &lo, &hi, &split, NULL);
 
     TEST_ASSERT_EQUAL(l1, lo);
     TEST_ASSERT_EQUAL(l1->next, hi);
@@ -197,11 +197,11 @@ void test_split_node_non_root_parent_has_room(void)
     for (i = 0; i < n1->num_keys; ++i)
         TEST_ASSERT_EQUAL(A_n1[i], n1->keys[i]);
 
-    TEST_ASSERT_EQUAL(l1, find_leaf(root, 1));
-    TEST_ASSERT_EQUAL(l1, find_leaf(root, 2));
-    TEST_ASSERT_EQUAL(l1->next, find_leaf(root, 3));
-    TEST_ASSERT_EQUAL(l1->next, find_leaf(root, 4));
-    TEST_ASSERT_EQUAL(l1->next, find_leaf(root, 5));
+    TEST_ASSERT_EQUAL(l1, bpt_find_leaf(root, 1));
+    TEST_ASSERT_EQUAL(l1, bpt_find_leaf(root, 2));
+    TEST_ASSERT_EQUAL(l1->next, bpt_find_leaf(root, 3));
+    TEST_ASSERT_EQUAL(l1->next, bpt_find_leaf(root, 4));
+    TEST_ASSERT_EQUAL(l1->next, bpt_find_leaf(root, 5));
 
     TEST_ASSERT_EQUAL(l1, n1->pointers[0]);
     TEST_ASSERT_EQUAL(l1->next, n1->pointers[1]);
@@ -221,11 +221,11 @@ void test_split_node_non_root_parent_has_room(void)
 }
 //}}}
 
-//{{{void test_split_node_root(void)
-void test_split_node_root(void)
+//{{{void test_bpt_split_node_root(void)
+void test_bpt_split_node_root(void)
 {
     int V[5] = {2,3,4,5,6};
-    struct node *root = new_node();
+    struct bpt_node *root = bpt_new_node();
     root->is_leaf = 1;
     root->num_keys = 5;
     root->keys[0] = 1;
@@ -240,11 +240,11 @@ void test_split_node_root(void)
     root->pointers[3] = (void*)(V + 2);
     root->pointers[4] = (void*)(V + 3);
 
-    struct node *p_root = root;
+    struct bpt_node *p_root = root;
 
-    struct node *lo, *hi;
+    struct bpt_node *lo, *hi;
     int split;
-    struct node *new_root = split_node(root, p_root, &lo, &hi, &split, NULL);
+    struct bpt_node *new_root = bpt_split_node(root, p_root, &lo, &hi, &split, NULL);
 
     TEST_ASSERT_EQUAL(p_root, lo);
     TEST_ASSERT_EQUAL(p_root->next, hi);
@@ -254,12 +254,12 @@ void test_split_node_root(void)
     TEST_ASSERT_EQUAL(2, p_root->num_keys);
     TEST_ASSERT_EQUAL(3, p_root->next->num_keys);
 
-    destroy_tree(&new_root);
+    bpt_destroy_tree(&new_root);
 }
 //}}}
 
-//{{{void test_insert(void)
-void test_insert(void)
+//{{{void test_bpt_insert(void)
+void test_bpt_insert(void)
 {
     /*
      * 2,3,4,5
@@ -283,12 +283,12 @@ void test_insert(void)
     int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int v=0;
 
-    struct node *root = NULL;
-    struct node *leaf = NULL;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf = NULL;
     int pos;
 
 
-    root = insert(root, 2, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 2, (void *)(V + v++), &leaf, &pos);
 
     TEST_ASSERT_EQUAL(1, root->num_keys);
     TEST_ASSERT_EQUAL(2, root->keys[0]);
@@ -298,17 +298,17 @@ void test_insert(void)
 
     // 4
     //  2,3 4,5,6
-    root = insert(root, 3, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 3, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(root, leaf);
     TEST_ASSERT_EQUAL(1, pos);
 
-    root = insert(root, 4, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 4, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(root, leaf);
     TEST_ASSERT_EQUAL(2, pos);
-    root = insert(root, 5, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 5, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(root, leaf);
     TEST_ASSERT_EQUAL(3, pos);
-    root = insert(root, 6, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 6, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(2, pos);
 
     TEST_ASSERT_FALSE(root == leaf);
@@ -318,26 +318,26 @@ void test_insert(void)
     TEST_ASSERT_EQUAL(4, root->keys[0]);
     TEST_ASSERT_EQUAL(0, root->is_leaf);
 
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->num_keys);
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->keys[0]);
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[0])->keys[1]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[0])->is_leaf);
+    TEST_ASSERT_EQUAL(2, ((struct bpt_node*)root->pointers[0])->num_keys);
+    TEST_ASSERT_EQUAL(2, ((struct bpt_node*)root->pointers[0])->keys[0]);
+    TEST_ASSERT_EQUAL(3, ((struct bpt_node*)root->pointers[0])->keys[1]);
+    TEST_ASSERT_EQUAL(1, ((struct bpt_node*)root->pointers[0])->is_leaf);
     TEST_ASSERT_EQUAL(root->pointers[1], 
-                      ((struct node*)root->pointers[0])->next);
+                      ((struct bpt_node*)root->pointers[0])->next);
 
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[1])->num_keys);
-    TEST_ASSERT_EQUAL(4, ((struct node*)root->pointers[1])->keys[0]);
-    TEST_ASSERT_EQUAL(5, ((struct node*)root->pointers[1])->keys[1]);
-    TEST_ASSERT_EQUAL(6, ((struct node*)root->pointers[1])->keys[2]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[1])->is_leaf);
-    TEST_ASSERT_EQUAL(NULL, ((struct node*)root->pointers[1])->next);
+    TEST_ASSERT_EQUAL(3, ((struct bpt_node*)root->pointers[1])->num_keys);
+    TEST_ASSERT_EQUAL(4, ((struct bpt_node*)root->pointers[1])->keys[0]);
+    TEST_ASSERT_EQUAL(5, ((struct bpt_node*)root->pointers[1])->keys[1]);
+    TEST_ASSERT_EQUAL(6, ((struct bpt_node*)root->pointers[1])->keys[2]);
+    TEST_ASSERT_EQUAL(1, ((struct bpt_node*)root->pointers[1])->is_leaf);
+    TEST_ASSERT_EQUAL(NULL, ((struct bpt_node*)root->pointers[1])->next);
 
     // 4,6
     //  2,3 4,5 6,7,8
-    root = insert(root, 7, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 7, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(root->pointers[1], leaf);
     TEST_ASSERT_EQUAL(3, pos);
-    root = insert(root, 8, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 8, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(root->pointers[2], leaf);
     TEST_ASSERT_EQUAL(2, pos);
  
@@ -345,45 +345,45 @@ void test_insert(void)
     TEST_ASSERT_EQUAL(4, root->keys[0]);
     TEST_ASSERT_EQUAL(6, root->keys[1]);
 
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->num_keys);
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->keys[0]);
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[0])->keys[1]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[0])->is_leaf);
+    TEST_ASSERT_EQUAL(2, ((struct bpt_node*)root->pointers[0])->num_keys);
+    TEST_ASSERT_EQUAL(2, ((struct bpt_node*)root->pointers[0])->keys[0]);
+    TEST_ASSERT_EQUAL(3, ((struct bpt_node*)root->pointers[0])->keys[1]);
+    TEST_ASSERT_EQUAL(1, ((struct bpt_node*)root->pointers[0])->is_leaf);
     TEST_ASSERT_EQUAL(root->pointers[1], 
-                      ((struct node*)root->pointers[0])->next);
+                      ((struct bpt_node*)root->pointers[0])->next);
 
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[1])->num_keys);
-    TEST_ASSERT_EQUAL(4, ((struct node*)root->pointers[1])->keys[0]);
-    TEST_ASSERT_EQUAL(5, ((struct node*)root->pointers[1])->keys[1]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[1])->is_leaf);
+    TEST_ASSERT_EQUAL(2, ((struct bpt_node*)root->pointers[1])->num_keys);
+    TEST_ASSERT_EQUAL(4, ((struct bpt_node*)root->pointers[1])->keys[0]);
+    TEST_ASSERT_EQUAL(5, ((struct bpt_node*)root->pointers[1])->keys[1]);
+    TEST_ASSERT_EQUAL(1, ((struct bpt_node*)root->pointers[1])->is_leaf);
     TEST_ASSERT_EQUAL(root->pointers[2], 
-                      ((struct node*)root->pointers[1])->next);
+                      ((struct bpt_node*)root->pointers[1])->next);
 
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[2])->num_keys);
-    TEST_ASSERT_EQUAL(6, ((struct node*)root->pointers[2])->keys[0]);
-    TEST_ASSERT_EQUAL(7, ((struct node*)root->pointers[2])->keys[1]);
-    TEST_ASSERT_EQUAL(8, ((struct node*)root->pointers[2])->keys[2]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[2])->is_leaf);
-    TEST_ASSERT_EQUAL(NULL, ((struct node*)root->pointers[2])->next);
+    TEST_ASSERT_EQUAL(3, ((struct bpt_node*)root->pointers[2])->num_keys);
+    TEST_ASSERT_EQUAL(6, ((struct bpt_node*)root->pointers[2])->keys[0]);
+    TEST_ASSERT_EQUAL(7, ((struct bpt_node*)root->pointers[2])->keys[1]);
+    TEST_ASSERT_EQUAL(8, ((struct bpt_node*)root->pointers[2])->keys[2]);
+    TEST_ASSERT_EQUAL(1, ((struct bpt_node*)root->pointers[2])->is_leaf);
+    TEST_ASSERT_EQUAL(NULL, ((struct bpt_node*)root->pointers[2])->next);
 
     // 8
     //  4,6 8,10,12
     //   2,3 4,5 6,7 8,9 10,11 12,13,14
 
-    root = insert(root, 9, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 10, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 11, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 12, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 13, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 14, (void *)(V + v++), &leaf, &pos);
-    TEST_ASSERT_EQUAL(((struct node*)root->pointers[1])->pointers[3], leaf);
+    root = bpt_insert(root, 9, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 10, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 11, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 12, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 13, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 14, (void *)(V + v++), &leaf, &pos);
+    TEST_ASSERT_EQUAL(((struct bpt_node*)root->pointers[1])->pointers[3], leaf);
  
     TEST_ASSERT_EQUAL(1, root->num_keys);
     TEST_ASSERT_EQUAL(8, root->keys[0]);
 
     //  4,6 8,10,12
-    struct node *n1 = (struct node *)root->pointers[0];
-    struct node *n2 = (struct node *)root->pointers[1];
+    struct bpt_node *n1 = (struct bpt_node *)root->pointers[0];
+    struct bpt_node *n2 = (struct bpt_node *)root->pointers[1];
 
     TEST_ASSERT_EQUAL(2, n1->num_keys);
     TEST_ASSERT_EQUAL(4, n1->keys[0]);
@@ -399,13 +399,13 @@ void test_insert(void)
     TEST_ASSERT_EQUAL(NULL, n2->next);
 
     //   2,3 4,5 6,7 8,9 10,11 12,13,14
-    struct node *l1 = (struct node *)n1->pointers[0];
-    struct node *l2 = (struct node *)n1->pointers[1];
-    struct node *l3 = (struct node *)n1->pointers[2];
-    //struct node *l3 = (struct node *)n2->pointers[0];
-    struct node *l4 = (struct node *)n2->pointers[1];
-    struct node *l5 = (struct node *)n2->pointers[2];
-    struct node *l6 = (struct node *)n2->pointers[3];
+    struct bpt_node *l1 = (struct bpt_node *)n1->pointers[0];
+    struct bpt_node *l2 = (struct bpt_node *)n1->pointers[1];
+    struct bpt_node *l3 = (struct bpt_node *)n1->pointers[2];
+    //struct bpt_node *l3 = (struct bpt_node *)n2->pointers[0];
+    struct bpt_node *l4 = (struct bpt_node *)n2->pointers[1];
+    struct bpt_node *l5 = (struct bpt_node *)n2->pointers[2];
+    struct bpt_node *l6 = (struct bpt_node *)n2->pointers[3];
 
     TEST_ASSERT_EQUAL(2, l1->num_keys);
     TEST_ASSERT_EQUAL(2, l1->keys[0]);
@@ -444,12 +444,12 @@ void test_insert(void)
     TEST_ASSERT_EQUAL(1, l6->is_leaf);
     TEST_ASSERT_EQUAL(NULL, l6->next);
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 }
 //}}}
 
-//{{{void test_insert(void)
-void test_insert_out_of_order(void)
+//{{{void test_bpt_insert(void)
+void test_bpt_insert_out_of_order(void)
 {
     /*
      * 2,3,4,5
@@ -473,8 +473,8 @@ void test_insert_out_of_order(void)
     int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int v=0;
 
-    struct node *root = NULL;
-    struct node *leaf = NULL;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf = NULL;
     int pos;
 
 
@@ -482,49 +482,49 @@ void test_insert_out_of_order(void)
      * 4
      *  2,3 4,5,6
      */
-    root = insert(root, 3, (void *)(V + 0), &leaf, &pos);
-    root = insert(root, 5, (void *)(V + 1), &leaf, &pos);
-    root = insert(root, 4, (void *)(V + 2), &leaf, &pos);
-    root = insert(root, 6, (void *)(V + 3), &leaf, &pos);
-    root = insert(root, 2, (void *)(V + 4), &leaf, &pos);
+    root = bpt_insert(root, 3, (void *)(V + 0), &leaf, &pos);
+    root = bpt_insert(root, 5, (void *)(V + 1), &leaf, &pos);
+    root = bpt_insert(root, 4, (void *)(V + 2), &leaf, &pos);
+    root = bpt_insert(root, 6, (void *)(V + 3), &leaf, &pos);
+    root = bpt_insert(root, 2, (void *)(V + 4), &leaf, &pos);
 
     TEST_ASSERT_EQUAL(1, root->num_keys);
 
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->num_keys);
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[1])->num_keys);
+    TEST_ASSERT_EQUAL(2, ((struct bpt_node*)root->pointers[0])->num_keys);
+    TEST_ASSERT_EQUAL(3, ((struct bpt_node*)root->pointers[1])->num_keys);
 
-    struct node *n = (struct node*)root->pointers[0];
+    struct bpt_node *n = (struct bpt_node*)root->pointers[0];
     TEST_ASSERT_EQUAL(V[4], *((uint32_t *)(n->pointers[0])));
     TEST_ASSERT_EQUAL(V[0], *((uint32_t *)(n->pointers[1])));
 
-    n = (struct node*)root->pointers[1];
+    n = (struct bpt_node*)root->pointers[1];
     TEST_ASSERT_EQUAL(V[2], *((uint32_t *)(n->pointers[0])));
     TEST_ASSERT_EQUAL(V[1], *((uint32_t *)(n->pointers[1])));
     TEST_ASSERT_EQUAL(V[3], *((uint32_t *)(n->pointers[2])));
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 }
 //}}}
 
-//{{{void test_insert_id_updated_node(void)
-void test_insert_id_updated_node(void)
+//{{{void test_bpt_insert_id_updated_bpt_node(void)
+void test_bpt_insert_id_updated_bpt_node(void)
 {
     int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int v=0;
 
-    struct node *root = NULL;
-    struct node *leaf;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf;
     int pos;
 
-    root = insert(root, 2, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 5, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 10, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 15, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 2, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 5, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 10, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 15, (void *)(V + v++), &leaf, &pos);
 
-    root = insert(root, 1, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 1, (void *)(V + v++), &leaf, &pos);
     TEST_ASSERT_EQUAL(root->pointers[0], leaf);
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 
 }
 //}}}
@@ -581,14 +581,14 @@ void test_find(void)
     int V[13] = {1,2,3,4,5,6,7,8,9,10,11,12,13};
     int v=0;
 
-    struct node *root = NULL;
-    struct node *leaf;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf;
 
     int pos;
 
     int i;
     for (i = 0; i < 13; ++i)
-        root = insert(root, (i+1)*2, (void *)(V + v++), &leaf, &pos);
+        root = bpt_insert(root, (i+1)*2, (void *)(V + v++), &leaf, &pos);
 
     int *r;
     v=0;
@@ -600,20 +600,20 @@ void test_find(void)
             TEST_ASSERT_EQUAL(i/2, *r);
     }
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 }
 //}}}
 
 //{{{void test_split_repair(void)
-void decrement_repair(struct node *a, struct node *b)
+void decrement_repair(struct bpt_node *a, struct bpt_node *b)
 {
     /*
-    struct node 
+    struct bpt_node 
     {
-        struct node *parent;
+        struct bpt_node *parent;
         uint32_t *keys, num_keys, is_leaf;
         void **pointers;
-        struct node *next;
+        struct bpt_node *next;
     };
     */
 
@@ -650,14 +650,14 @@ void test_split_repair(void)
     int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int v=0;
 
-    struct node *root = NULL;
-    struct node *leaf = NULL;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf = NULL;
 
     int pos;
 
     repair_func = decrement_repair;
 
-    root = insert(root, 2, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 2, (void *)(V + v++), &leaf, &pos);
 
     TEST_ASSERT_EQUAL(1, root->num_keys);
     TEST_ASSERT_EQUAL(2, root->keys[0]);
@@ -665,18 +665,18 @@ void test_split_repair(void)
 
     // 4
     //  2,3 4,5,6
-    root = insert(root, 3, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 4, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 5, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 3, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 4, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 5, (void *)(V + v++), &leaf, &pos);
 
     TEST_ASSERT_EQUAL(4, root->num_keys);
     TEST_ASSERT_EQUAL(2, root->keys[0]);
     TEST_ASSERT_EQUAL(1, root->is_leaf);
 
-    root = insert(root, 6, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 6, (void *)(V + v++), &leaf, &pos);
 
     // Using a silly split repair function just to test, 
-    // -1 the keys in the left node and + those in the right
+    // -1 the keys in the left bpt_node and + those in the right
 
     // 5
     //  1,2 5,6,7
@@ -684,28 +684,28 @@ void test_split_repair(void)
     TEST_ASSERT_EQUAL(5, root->keys[0]);
     TEST_ASSERT_EQUAL(0, root->is_leaf);
 
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->num_keys);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[0])->keys[0]);
-    TEST_ASSERT_EQUAL(2, ((struct node*)root->pointers[0])->keys[1]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[0])->is_leaf);
+    TEST_ASSERT_EQUAL(2, ((struct bpt_node*)root->pointers[0])->num_keys);
+    TEST_ASSERT_EQUAL(1, ((struct bpt_node*)root->pointers[0])->keys[0]);
+    TEST_ASSERT_EQUAL(2, ((struct bpt_node*)root->pointers[0])->keys[1]);
+    TEST_ASSERT_EQUAL(1, ((struct bpt_node*)root->pointers[0])->is_leaf);
     TEST_ASSERT_EQUAL(root->pointers[1], 
-                      ((struct node*)root->pointers[0])->next);
+                      ((struct bpt_node*)root->pointers[0])->next);
 
-    TEST_ASSERT_EQUAL(3, ((struct node*)root->pointers[1])->num_keys);
-    TEST_ASSERT_EQUAL(5, ((struct node*)root->pointers[1])->keys[0]);
-    TEST_ASSERT_EQUAL(6, ((struct node*)root->pointers[1])->keys[1]);
-    TEST_ASSERT_EQUAL(7, ((struct node*)root->pointers[1])->keys[2]);
-    TEST_ASSERT_EQUAL(1, ((struct node*)root->pointers[1])->is_leaf);
-    TEST_ASSERT_EQUAL(NULL, ((struct node*)root->pointers[1])->next);
+    TEST_ASSERT_EQUAL(3, ((struct bpt_node*)root->pointers[1])->num_keys);
+    TEST_ASSERT_EQUAL(5, ((struct bpt_node*)root->pointers[1])->keys[0]);
+    TEST_ASSERT_EQUAL(6, ((struct bpt_node*)root->pointers[1])->keys[1]);
+    TEST_ASSERT_EQUAL(7, ((struct bpt_node*)root->pointers[1])->keys[2]);
+    TEST_ASSERT_EQUAL(1, ((struct bpt_node*)root->pointers[1])->is_leaf);
+    TEST_ASSERT_EQUAL(NULL, ((struct bpt_node*)root->pointers[1])->next);
 
     repair_func = NULL;
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 }
 //}}}
 
-//{{{ void test_destroy_tree(void)
-void test_destroy_tree(void)
+//{{{ void test_bpt_destroy_tree(void)
+void test_bpt_destroy_tree(void)
 {
     /*
      * 2,3,4,5
@@ -729,34 +729,34 @@ void test_destroy_tree(void)
     int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int v=0;
 
-    struct node *root = NULL;
-    struct node *leaf = NULL;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf = NULL;
     int pos;
 
-    root = insert(root, 2, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 3, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 4, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 5, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 6, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 7, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 8, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 9, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 10, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 11, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 12, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 13, (void *)(V + v++), &leaf, &pos);
-    root = insert(root, 14, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 2, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 3, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 4, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 5, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 6, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 7, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 8, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 9, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 10, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 11, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 12, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 13, (void *)(V + v++), &leaf, &pos);
+    root = bpt_insert(root, 14, (void *)(V + v++), &leaf, &pos);
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 }
 //}}}
 
 //{{{ void test_rand_test(void)
-void test_bpt_find(void)
+void test_rand_test(void)
 {
     repair_func = NULL;
-    struct node *root = NULL;
-    struct node *leaf = NULL;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf = NULL;
     int pos;
     uint32_t size = 1000;
 
@@ -770,7 +770,7 @@ void test_bpt_find(void)
     for (i = 0; i < size; ++i) {
         d[i] = rand() % 100000;
         v[i] = d[i] /2;
-        root = insert(root, d[i], (void *)(v + i), &leaf, &pos);
+        root = bpt_insert(root, d[i], (void *)(v + i), &leaf, &pos);
     }
 
     uint32_t *r;
@@ -781,18 +781,18 @@ void test_bpt_find(void)
 
     free(d);
     free(v);
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 }
 //}}}
 
-//{{{ void test_insert_repeat(void)
-void test_insert_repeat(void)
+//{{{ void test_bpt_insert_repeat(void)
+void test_bpt_insert_repeat(void)
 {
     int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int v=0;
 
-    struct node *root = NULL;
-    struct node *leaf = NULL;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf = NULL;
     int pos;
 
 
@@ -800,17 +800,17 @@ void test_insert_repeat(void)
      * 4
      *  2,3 4,5,6
      */
-    root = insert(root, 3, (void *)(V + 0),  &leaf, &pos);
-    root = insert(root, 5, (void *)(V + 1),  &leaf, &pos);
-    root = insert(root, 4, (void *)(V + 2),  &leaf, &pos);
-    root = insert(root, 6, (void *)(V + 3),  &leaf, &pos);
-    root = insert(root, 2, (void *)(V + 4),  &leaf, &pos);
+    root = bpt_insert(root, 3, (void *)(V + 0),  &leaf, &pos);
+    root = bpt_insert(root, 5, (void *)(V + 1),  &leaf, &pos);
+    root = bpt_insert(root, 4, (void *)(V + 2),  &leaf, &pos);
+    root = bpt_insert(root, 6, (void *)(V + 3),  &leaf, &pos);
+    root = bpt_insert(root, 2, (void *)(V + 4),  &leaf, &pos);
 
-    root = insert(root, 2, (void *)(V + 5),  &leaf, &pos);
-    root = insert(root, 3, (void *)(V + 6),  &leaf, &pos);
-    root = insert(root, 4, (void *)(V + 7),  &leaf, &pos);
-    root = insert(root, 5, (void *)(V + 8),  &leaf, &pos);
-    root = insert(root, 6, (void *)(V + 9),  &leaf, &pos);
+    root = bpt_insert(root, 2, (void *)(V + 5),  &leaf, &pos);
+    root = bpt_insert(root, 3, (void *)(V + 6),  &leaf, &pos);
+    root = bpt_insert(root, 4, (void *)(V + 7),  &leaf, &pos);
+    root = bpt_insert(root, 5, (void *)(V + 8),  &leaf, &pos);
+    root = bpt_insert(root, 6, (void *)(V + 9),  &leaf, &pos);
 
     uint32_t *r = (uint32_t *)bpt_find(root, &leaf, 2);
     TEST_ASSERT_EQUAL(V[5], *r);
@@ -827,11 +827,11 @@ void test_insert_repeat(void)
     r = (uint32_t *)bpt_find(root, &leaf, 6);
     TEST_ASSERT_EQUAL(V[9], *r);
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
 }
 //}}}
 
-//{{{ void test_insert_repeat_append(void)
+//{{{ void test_bpt_insert_repeat_append(void)
 
 void append_sum(void *new_value, void **curr_value)
 {
@@ -841,13 +841,13 @@ void append_sum(void *new_value, void **curr_value)
     **curr = **curr + *new;
 }
 
-void test_insert_repeat_append(void)
+void test_bpt_insert_repeat_append(void)
 {
     int V[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int v=0;
 
-    struct node *root = NULL;
-    struct node *leaf = NULL;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf = NULL;
     int pos;
 
     append_func = append_sum;
@@ -856,17 +856,17 @@ void test_insert_repeat_append(void)
      * 4
      *  2,3 4,5,6
      */
-    root = insert(root, 2, (void *)(V + 0),  &leaf, &pos); //1
-    root = insert(root, 3, (void *)(V + 1),  &leaf, &pos); //2
-    root = insert(root, 4, (void *)(V + 2),  &leaf, &pos); //3
-    root = insert(root, 5, (void *)(V + 3),  &leaf, &pos); //4
-    root = insert(root, 6, (void *)(V + 4),  &leaf, &pos); //5
+    root = bpt_insert(root, 2, (void *)(V + 0),  &leaf, &pos); //1
+    root = bpt_insert(root, 3, (void *)(V + 1),  &leaf, &pos); //2
+    root = bpt_insert(root, 4, (void *)(V + 2),  &leaf, &pos); //3
+    root = bpt_insert(root, 5, (void *)(V + 3),  &leaf, &pos); //4
+    root = bpt_insert(root, 6, (void *)(V + 4),  &leaf, &pos); //5
 
-    root = insert(root, 2, (void *)(V + 5),  &leaf, &pos); //7
-    root = insert(root, 3, (void *)(V + 6),  &leaf, &pos); //7
-    root = insert(root, 4, (void *)(V + 7),  &leaf, &pos); //8
-    root = insert(root, 5, (void *)(V + 8),  &leaf, &pos); //9
-    root = insert(root, 6, (void *)(V + 9),  &leaf, &pos); //10
+    root = bpt_insert(root, 2, (void *)(V + 5),  &leaf, &pos); //7
+    root = bpt_insert(root, 3, (void *)(V + 6),  &leaf, &pos); //7
+    root = bpt_insert(root, 4, (void *)(V + 7),  &leaf, &pos); //8
+    root = bpt_insert(root, 5, (void *)(V + 8),  &leaf, &pos); //9
+    root = bpt_insert(root, 6, (void *)(V + 9),  &leaf, &pos); //10
 
     uint32_t *r = (uint32_t *)bpt_find(root, &leaf, 2);
     TEST_ASSERT_EQUAL(7, *r);
@@ -883,7 +883,42 @@ void test_insert_repeat_append(void)
     r = (uint32_t *)bpt_find(root, &leaf, 6);
     TEST_ASSERT_EQUAL(15, *r);
 
-    destroy_tree(&root);
+    bpt_destroy_tree(&root);
     append_func = NULL;
+}
+//}}}
+
+//{{{ void test_rand_test_high_order(void)
+void test_rand_test_high_order(void)
+{
+    ORDER=50;
+    repair_func = NULL;
+    struct bpt_node *root = NULL;
+    struct bpt_node *leaf = NULL;
+    int pos;
+    uint32_t size = 100000;
+
+    uint32_t *d = (uint32_t *)malloc(size * sizeof(uint32_t));
+    uint32_t *v = (uint32_t *)malloc(size * sizeof(uint32_t));
+
+    time_t t = time(NULL);
+    srand(t);
+
+    uint32_t i, j;
+    for (i = 0; i < size; ++i) {
+        d[i] = rand();
+        v[i] = d[i] /2;
+        root = bpt_insert(root, d[i], (void *)(v + i), &leaf, &pos);
+    }
+
+    uint32_t *r;
+    for (i = 0; i < size; ++i) {
+        r = (uint32_t *)bpt_find(root, &leaf, d[i]);
+        TEST_ASSERT_EQUAL(d[i]/2, *r);
+    }
+
+    free(d);
+    free(v);
+    bpt_destroy_tree(&root);
 }
 //}}}

@@ -7,7 +7,7 @@
 int main(int argc, char **argv)
 {
 
-    struct node *root = NULL, *leaf = NULL;
+    struct bpt_node *root = NULL, *leaf = NULL;
 
     char line[256];
     FILE *f = fopen(argv[1], "r");
@@ -24,12 +24,12 @@ int main(int argc, char **argv)
             printf("%d %d\n", key, *value);
                     
             int pos;
-            root = insert(root, key, (void *)value, &leaf, &pos);
+            root = bpt_insert(root, key, (void *)value, &leaf, &pos);
         } else if (a[0] == 'S') {
             int key = atoi(strtok(NULL, " "));
             //r = find(root, key);
         } else if (a[0] == 'P') {
-            print_tree(root, 0);
+            bpt_print_tree(root, 0);
         }
     }
     fclose(f);
